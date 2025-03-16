@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './VaccineCard.css';
 import { PillIcon, SyringeIcon, SyrupIcon } from './icons.tsx';
 
@@ -37,11 +37,24 @@ const getMedicationIcon = (type: 'pill' | 'vaccine' | 'syrup') => {
     );
 };
 
+const getRandomRotation = () => {
+    return Math.random() * 16 - 8; // Rotación aleatoria entre -8° y 8°
+};
+
 const VaccineCard = ({ name, dateAdministered, nextDate, imageUrl, medication_type, getRemainingDays, formatDate }: VaccineCardProps) => {
     const remainingDays = getRemainingDays(nextDate);
+    const imageUrls = imageUrl ? imageUrl.split(',') : [];
+
     return (
-        <div>
-            <div className="vaccine-card">
+        <div className="vaccine-card">
+            <div className="vaccine-card-left">
+                <div className="image-stack">
+                    {imageUrls.map((url, index) => (
+                        <div key={index} className="image-stack-item" style={{ transform: `rotate(${getRandomRotation()}deg)` }}>
+                            <img src={url} alt={`Imagen ${index + 1}`} />
+                        </div>
+                    ))}
+                </div>
                 <div className="vaccine-info">
                     <div className="name-container">
                         <p className="p-bold">{name}</p>
@@ -49,25 +62,17 @@ const VaccineCard = ({ name, dateAdministered, nextDate, imageUrl, medication_ty
                     </div>
                     <p className="p-gray">Fecha: {formatDate(dateAdministered)}</p>
                 </div>
-                <div className="vaccine-info-right">
-                    <p className="p-white">{formatDate(nextDate)}</p>
-                    {/* Mostrar días restantes para la próxima dosis */}
-                    {typeof remainingDays === 'number' ? (
-                        <p className="p-gray">
-                            en {remainingDays} días
-                        </p>
-                    ) : (
-                        <p className="p-gray">
-                            {remainingDays}
-                        </p>
-                    )}
-                </div>
             </div>
-            <div>
-                {imageUrl && (
-                    <div className="vaccine-image">
-                        <img src={imageUrl} alt="Comprobante veterinario" />
-                    </div>
+            <div className="vaccine-info-right">
+                <p className="p-white">{formatDate(nextDate)}</p>
+                {typeof remainingDays === 'number' ? (
+                    <p className="p-gray">
+                        en {remainingDays} días
+                    </p>
+                ) : (
+                    <p className="p-gray">
+                        {remainingDays}
+                    </p>
                 )}
             </div>
         </div>

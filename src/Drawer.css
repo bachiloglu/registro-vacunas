@@ -23,6 +23,7 @@
   display: block;
 }
 
+
 .drawer {
   position: fixed;
   left: 50%;
@@ -32,11 +33,11 @@
   height: auto;
   max-height: 70vh;
   background-color: #161616;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 1001;
   padding: 20px;
   box-sizing: border-box;
-  border-radius: 12px;
+  border: 1px solid rgb(69, 69, 69);
+  border-radius: 16px;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   opacity: 0;
@@ -56,11 +57,11 @@
 }
 
 .drawer-header {
+  width:100%;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  padding-right: 40px; /* Espacio para el botón */
+  margin-bottom: 32px;
 }
 
 .drawer-header h2 {
@@ -71,7 +72,6 @@
 }
 
 .close-button {
-  position: absolute;
   top: 12px;
   right: 12px;
   background: none;
@@ -114,10 +114,10 @@
 
 .form-buttons {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  flex-direction: row-reverse;
   margin-top: 24px;
   align-items: center;
+  justify-content: space-between;
 }
 
 .form-buttons button[type="submit"] {

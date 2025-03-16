@@ -22,10 +22,10 @@ const VaccineForm = ({ onVaccineAdded, onCancel }: VaccineFormProps) => {
     name: '',
     dateAdministered: '',
     nextDate: '',
-    proofImage: null as File | null,
+    proofImages: [] as File[],
     medicationType: 'vaccine' as const
   });
-  const [imagePreview, setImagePreview] = useState(null as string | null);
+  const [imagePreviews, setImagePreviews] = useState([] as { url: string, file: File }[]);
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -37,36 +37,60 @@ const VaccineForm = ({ onVaccineAdded, onCancel }: VaccineFormProps) => {
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files[0]) {
-      const file = files[0];
-      setNewVaccine({
-        ...newVaccine,
-        proofImage: file
-      });
-      
+    const files = Array.from(e.target.files || []);
+    const newPreviews = files.map(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        setImagePreviews(prev => [...prev, { url: reader.result as string, file }]);
       };
       reader.readAsDataURL(file);
-    }
+      return { url: '', file };
+    });
+    setNewVaccine({
+      ...newVaccine,
+      proofImages: [...newVaccine.proofImages, ...files]
+    });
   };
 
-  const uploadImage = async (file: File): Promise<string> => {
-    const fileName = `${file.name}_${Date.now()}`;
-    const { data, error } = await supabase
-      .storage
-      .from('vaccine_proofs')
-      .upload(fileName, file);
-    if (error) {
-      throw error;
-    }
-    const { data: { publicUrl } } = supabase
-      .storage
-      .from('vaccine_proofs')
-      .getPublicUrl(fileName);
-    return publicUrl;
+  const removeImage = (fileToRemove: File) => {
+    setNewVaccine({
+      ...newVaccine,
+      proofImages: newVaccine.proofImages.filter(file => file !== fileToRemove)
+    });
+    setImagePreviews(imagePreviews.filter(preview => preview.file !== fileToRemove));
+  };
+
+  const uploadImages = async (images: File[]): Promise<string[]> => {
+    const uploadPromises = images.map(async (image) => {
+      // Formato más simple y seguro para el nombre del archivo
+      const fileExt = image.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      
+      // Usa una carpeta dentro del bucket
+      const filePath = `uploads/${fileName}`;
+      
+      // Subir con manejo de errores mejorado
+      const { data, error } = await supabase.storage
+        .from('vaccine_proofs')
+        .upload(filePath, image, {
+          cacheControl: '3600',
+          upsert: true // Cambiado a true para sobrescribir si existe
+        });
+      
+      if (error) {
+        console.error('Error detallado al subir imagen:', error);
+        throw error;
+      }
+      
+      // Obtener URL pública
+      const { data: { publicUrl } } = supabase.storage
+        .from('vaccine_proofs')
+        .getPublicUrl(filePath);
+      
+        return publicUrl;
+    });
+    
+    return Promise.all(uploadPromises);
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -74,10 +98,10 @@ const VaccineForm = ({ onVaccineAdded, onCancel }: VaccineFormProps) => {
     setLoading(true);
     
     try {
-      let imageUrl: string | null = null;
+      let imageUrls: string[] = [];
 
-      if (newVaccine.proofImage) {
-        imageUrl = await uploadImage(newVaccine.proofImage);
+      if (newVaccine.proofImages.length > 0) {
+        imageUrls = await uploadImages(newVaccine.proofImages);
       }
       
       const { data, error } = await supabase
@@ -86,7 +110,7 @@ const VaccineForm = ({ onVaccineAdded, onCancel }: VaccineFormProps) => {
           name: newVaccine.name,
           dateAdministered: newVaccine.dateAdministered,
           nextDate: newVaccine.nextDate,
-          imageUrl: imageUrl,
+          imageUrl: imageUrls.join(','),
           createdAt: new Date().toISOString(),
           medication_type: newVaccine.medicationType
         }])
@@ -164,20 +188,28 @@ const VaccineForm = ({ onVaccineAdded, onCancel }: VaccineFormProps) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="proofImage" className="label-custom">Imagen de Comprobante (opcional)</label>
+          <label htmlFor="proofImages" className="label-custom">Imágenes de Comprobante (opcional)</label>
           <input
             type="file"
-            id="proofImage"
-            name="proofImage"
+            id="proofImages"
+            name="proofImages"
             onChange={handleImageChange}
+            multiple
           />
         </div>
-        {imagePreview && (
-          <div className="image-preview">
-            <h3>Vista Previa de la Imagen</h3>
-            <img src={imagePreview} alt="Vista Previa" />
-          </div>
-        )}
+        <div className="image-previews">
+          {imagePreviews.map((preview, index) => (
+            <div key={index} className="image-preview-item">
+              <div className="image-preview-box">
+                <img src={preview.url} alt={`Vista Previa ${index + 1}`} />
+              </div>
+              <div className="image-preview-info">
+                <p>{preview.file.name}</p>
+                <button type="button" onClick={() => removeImage(preview.file)}>Eliminar</button>
+              </div>
+            </div>
+          ))}
+        </div>
         <div className="form-buttons">
           <button type="submit" disabled={loading}>
             {loading ? 'Guardando...' : 'Guardar Vacuna'}

@@ -14,14 +14,13 @@ const Drawer = ({ isOpen, onClose, children }: DrawerProps) => {
         <>
           <div className="drawer-overlay" onClick={onClose} />
           <div className="drawer">
-            <div className="drawer-header">
-              <h2>Agregar Registro</h2>
-              <button className="close-button" onClick={onClose}>&times;</button>
+              <div className="drawer-header">
+                <h2>Agregar Registro</h2>
+              </div>
+              <div className="drawer-content">
+                {children}
+              </div>
             </div>
-            <div className="drawer-content">
-              {children}
-            </div>
-          </div>
         </>
       )}
     </>

@@ -1,6 +1,7 @@
 import React from 'react';
 import './MainButton.css'
 
+
 interface MainButtonProps {
   onClick: () => void;
 }
