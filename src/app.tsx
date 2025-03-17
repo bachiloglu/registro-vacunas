@@ -5,6 +5,8 @@ import VaccineCard from './VaccineCard.tsx';
 import Drawer from './Drawer.tsx';
 import MainButton from './MainButton.tsx';
 import VaccineForm from './VaccineForm.tsx';
+import { Attach } from './icons.tsx';
+import ImageCarousel from './ImageCarousel.tsx'; // Importa el componente del carrusel de imágenes
 
 // Definición de tipos
 interface Vaccine {
@@ -20,6 +22,8 @@ interface Vaccine {
 const App = () => {
   const [vaccines, setVaccines] = useState([] as Vaccine[]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isCarouselOpen, setIsCarouselOpen] = useState(false); // Estado para controlar la visibilidad del carrusel
+  const [selectedImages, setSelectedImages] = useState<string[]>([]); // Estado para almacenar las imágenes seleccionadas
 
   useEffect(() => {
     const fetchVaccines = async () => {
@@ -50,6 +54,15 @@ const App = () => {
     setIsDrawerOpen(false); // Cerrar el drawer después de guardar
   };
 
+  const handleImageStackClick = (images: string[]) => {
+    setSelectedImages(images);
+    setIsCarouselOpen(true);
+  };
+
+  const handleCarouselClose = () => {
+    setIsCarouselOpen(false);
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
@@ -57,7 +70,7 @@ const App = () => {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
-  
+
   const getRemainingDays = (nextDateString: string) => {
     const today = new Date();
     const nextDate = new Date(nextDateString);
@@ -71,7 +84,10 @@ const App = () => {
       <div className="vaccine-list">
         <div className="header">
           <p className="p-gray">Registro</p>
-          <p className="p-gray">Próxima</p>
+          <div className="header-right">
+            <p className="p-gray">Próxima</p>
+            <Attach className="size-6 attach-icon" stroke="#A0A0A0" />
+          </div>
         </div>
         {vaccines.length === 0 ? (
           <p>No hay registros aún.</p>
@@ -86,6 +102,7 @@ const App = () => {
                   getRemainingDays={getRemainingDays}
                   formatDate={formatDate}
                   remainingDays={remainingDays}
+                  onImageStackClick={handleImageStackClick} // Pasa la función de clic al componente VaccineCard
                 />
               );
             })}
@@ -96,11 +113,15 @@ const App = () => {
       <MainButton onClick={handleAddNewRecord} />
 
       <Drawer isOpen={isDrawerOpen} onClose={handleDrawerClose}>
-        <VaccineForm 
-          onVaccineAdded={handleVaccineAdded} 
+        <VaccineForm
+          onVaccineAdded={handleVaccineAdded}
           onCancel={handleDrawerClose}
         />
       </Drawer>
+
+      {isCarouselOpen && (
+        <ImageCarousel images={selectedImages} onClose={handleCarouselClose} />
+      )}
     </div>
   );
 };

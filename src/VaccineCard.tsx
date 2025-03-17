@@ -10,6 +10,7 @@ interface VaccineCardProps {
     medication_type: 'pill' | 'vaccine' | 'syrup';
     getRemainingDays: (date: string) => number | string;
     formatDate: (date: string) => string;
+    onImageStackClick: (images: string[]) => void; // Nueva prop para manejar el clic en el image-stack
 }
 
 const getMedicationIcon = (type: 'pill' | 'vaccine' | 'syrup') => {
@@ -41,20 +42,19 @@ const getRandomRotation = () => {
     return Math.random() * 16 - 8; // Rotación aleatoria entre -8° y 8°
 };
 
-const VaccineCard = ({ name, dateAdministered, nextDate, imageUrl, medication_type, getRemainingDays, formatDate }: VaccineCardProps) => {
+const VaccineCard = ({ name, dateAdministered, nextDate, imageUrl, medication_type, getRemainingDays, formatDate, onImageStackClick }: VaccineCardProps) => {
     const remainingDays = getRemainingDays(nextDate);
     const imageUrls = imageUrl ? imageUrl.split(',') : [];
+
+    const handleImageClick = () => {
+        if (imageUrl) {
+            onImageStackClick(imageUrls); // Pasa las URLs de las imágenes al hacer clic
+        }
+    };
 
     return (
         <div className="vaccine-card">
             <div className="vaccine-card-left">
-                <div className="image-stack">
-                    {imageUrls.map((url, index) => (
-                        <div key={index} className="image-stack-item" style={{ transform: `rotate(${getRandomRotation()}deg)` }}>
-                            <img src={url} alt={`Imagen ${index + 1}`} />
-                        </div>
-                    ))}
-                </div>
                 <div className="vaccine-info">
                     <div className="name-container">
                         <p className="p-bold">{name}</p>
@@ -64,16 +64,29 @@ const VaccineCard = ({ name, dateAdministered, nextDate, imageUrl, medication_ty
                 </div>
             </div>
             <div className="vaccine-info-right">
-                <p className="p-white">{formatDate(nextDate)}</p>
-                {typeof remainingDays === 'number' ? (
-                    <p className="p-gray">
-                        en {remainingDays} días
-                    </p>
-                ) : (
-                    <p className="p-gray">
-                        {remainingDays}
-                    </p>
-                )}
+            
+                    <div className="date-info">
+
+                        <p className="p-white">{formatDate(nextDate)}</p>
+                        {typeof remainingDays === 'number' ? (
+                            <p className="p-gray">
+                                en {remainingDays} días
+                            </p>
+                        ) : (
+                            <p className="p-gray">
+                                {remainingDays}
+                            </p>
+                        )}
+                    </div>
+                
+               
+                <div className="image-stack" onClick={handleImageClick}>
+                    {imageUrls.map((url, index) => (
+                        <div key={index} className="image-stack-item" style={{ transform: `rotate(${getRandomRotation()}deg)` }}>
+                            <img src={url} alt={`Imagen ${index + 1}`} />
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

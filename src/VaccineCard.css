@@ -5,7 +5,7 @@
     align-items: center; /* Alinear al centro los elementos de izquierda y derecha */
     background-color: #161616;
     border-radius: 10px;
-    padding: 12px;
+    padding: 12px 12px 12px 12px;
     /* height: auto; */ /* Revertir el cambio de height */
 }
 
@@ -43,9 +43,30 @@
 
 .vaccine-info-right {
     display: flex;
+    flex-direction: row; /* Cambiar a fila */
+    gap: 20px; /* Aumentar el espacio entre elementos */
+    align-items: center; /* Alinear al centro */
+}
+
+.date-info {
+    gap: 6px;
+    display: flex;
     flex-direction: column;
-    gap: 4px;
     align-items: flex-end;
+}
+
+.adjuntos-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.p-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+    margin: 0;
+    text-align: right;
 }
 
 .p-bold {
@@ -167,8 +188,8 @@
 }
 
 .image-carousel img {
-  width: 100px;
-  height: 100px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -195,6 +216,8 @@
   height: 100%;
   border-radius: 4px;
   overflow: hidden;
+  background-color: #171717; /* Fondo igual a las imágenes cuando se cargan */
+  border: 1px solid rgb(69, 69, 69); /* Borde de rgb(69, 69, 69) */
 }
 
 .image-stack-item img {

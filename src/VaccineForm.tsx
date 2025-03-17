@@ -62,32 +62,41 @@ const VaccineForm = ({ onVaccineAdded, onCancel }: VaccineFormProps) => {
 
   const uploadImages = async (images: File[]): Promise<string[]> => {
     const uploadPromises = images.map(async (image) => {
-      // Formato más simple y seguro para el nombre del archivo
-      const fileExt = image.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-      
-      // Usa una carpeta dentro del bucket
-      const filePath = `uploads/${fileName}`;
-      
-      // Subir con manejo de errores mejorado
-      const { data, error } = await supabase.storage
-        .from('vaccine_proofs')
-        .upload(filePath, image, {
-          cacheControl: '3600',
-          upsert: true // Cambiado a true para sobrescribir si existe
-        });
-      
-      if (error) {
-        console.error('Error detallado al subir imagen:', error);
-        throw error;
-      }
-      
-      // Obtener URL pública
-      const { data: { publicUrl } } = supabase.storage
-        .from('vaccine_proofs')
-        .getPublicUrl(filePath);
-      
+      try {
+        // Simplificar el nombre del archivo
+        const fileExt = image.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        
+        // Usar la carpeta "public" según tu política
+        const filePath = `public/${fileName}`;
+        
+        console.log("Intentando subir:", filePath, "tipo:", image.type);
+        
+        const { data, error } = await supabase.storage
+          .from('vaccine_proofs') // Nombre correcto del bucket con guion bajo
+          .upload(filePath, image, {
+            contentType: image.type,
+            upsert: true
+          });
+        
+        if (error) {
+          console.error('Error detallado al subir imagen:', error);
+          console.error('Mensaje:', error.message);
+          console.error('Código:', error.code);
+          console.error('Detalles:', error.details);
+          throw error;
+        }
+        
+        // Obtener URL pública
+        const { data: { publicUrl } } = supabase.storage
+          .from('vaccine_proofs') // Asegurarse de usar el mismo nombre aquí también
+          .getPublicUrl(filePath);
+        
         return publicUrl;
+      } catch (e) {
+        console.error('Error en procesamiento de imagen:', e);
+        throw e;
+      }
     });
     
     return Promise.all(uploadPromises);

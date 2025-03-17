@@ -74,12 +74,18 @@ h2 {
   border-radius: 10px;
 }
 
+.header-right{
+  display: flex;
+  gap: 44px;
+  align-items: center;
+}
+
 .vaccine-list .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #282828;
-  padding: 12px;
+  padding: 12px 12px 12px 12px;
 }
 
 .date-fields {
@@ -413,4 +419,11 @@ button:disabled {
   .drawer {
     max-width: 100%;
   }
+}
+
+.attach-icon {
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
 }
